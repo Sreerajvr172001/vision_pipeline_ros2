@@ -21,6 +21,7 @@ class ImagePublisher(Node):
 
         self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2) # Open the default camera
 
+        success_format = self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG')) # Set the video codec to MJPG for better performance
 
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set the desired width
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # Set the desired height
