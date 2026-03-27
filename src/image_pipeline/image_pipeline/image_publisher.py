@@ -50,7 +50,7 @@ class ImagePublisher(Node):
         self.capture_thread.start() # Start the capture thread to continuously read frames from the camera
 
         self.get_logger().info('Threaded Image Publisher Node Started')
-        self.get_logger().info(f"Camera resolution: {width}x{height}, CV2 FPS: {cv2_fps}")
+        self.get_logger().info(f"Camera resolution: {int(actual_width)}x{int(actual_height)}, CV2 FPS: {actual_cv2_fps}")
     
 
 
