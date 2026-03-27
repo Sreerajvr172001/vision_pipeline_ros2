@@ -84,12 +84,7 @@ class ImagePublisher(Node):
                 self.start_time_ = current_time
         print('Exiting capture loop')
 
-    def publish_image(self):
-        with self.lock:
-            if self.frame is None:
-                return
-            frame = self.frame.copy()   
-
+    def publish_image(self, frame):
         header = Header()
         header.stamp = self.get_clock().now().to_msg()
         header.frame_id = 'camera_frame'
