@@ -15,7 +15,7 @@ class ImagePublisher(Node):
 
         self.publisher_ = self.create_publisher(Image, 'image_topic', 10)
 
-        self.timer_ = self.create_timer(0.01, self.publish_image)  # Publish at 10 Hz
+        #self.timer_ = self.create_timer(0.01, self.publish_image)  # Publish at 100 Hz
 
         self.bridge_ = CvBridge()
 
@@ -57,11 +57,10 @@ class ImagePublisher(Node):
             if self.stop_event.is_set(): # Check if stop event is set after reading the frame, if so,
                 break
 
-            if ret: # If the frame was successfully captured, update the shared frame variable with proper locking
-                with self.lock:
-                    self.frame = frame
-            if not ret: # If the frame was not successfully captured, print an error message and break the loop
-                print('Failed to capture image')
+            if ret and frame is not None: # If the frame was successfully captured, update the shared frame variable with proper locking
+                    self.publish_image(frame) # Publish the image immediately after capturing it
+            if not ret or frame is None: # If the frame was not successfully captured, print an error message and break the loop
+                self.get_logger().warn('Dropped frame or camera disconnected')
                 break
 
             capture_time = (end_time - start_time).nanoseconds / 1e9
@@ -104,7 +103,7 @@ class ImagePublisher(Node):
         if self.cap.isOpened():
             self.cap.release() # Release the camera resource
         
-        self.destroy_timer(self.timer_) # Stop the timer to prevent further calls to publish_image
+        #self.destroy_timer(self.timer_) # Stop the timer to prevent further calls to publish_image
         super().destroy_node() # Call the base class destroy_node to clean up any remaining resources
 
 def main(args=None):
