@@ -23,10 +23,10 @@ class ImagePublisher(Node):
 
         success_format = self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG')) # Set the video codec to MJPG for better performance
 
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set the desired width
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # Set the desired height
-        self.cap.set(cv2.CAP_PROP_FPS, 30) # Set the desired frame rate
-        #self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) # Set the buffer size to 1 to get the latest frame
+        success_width = self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # Set the desired width
+        success_height = self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # Set the desired height
+        success_fps = self.cap.set(cv2.CAP_PROP_FPS, 30) # Set the desired frame rate
+        success_buffer = self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 2) # Set the buffer size to 1 to get the latest frame
         
 
         width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
