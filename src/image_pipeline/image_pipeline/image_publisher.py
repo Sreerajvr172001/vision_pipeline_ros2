@@ -29,9 +29,14 @@ class ImagePublisher(Node):
         success_buffer = self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 2) # Set the buffer size to 1 to get the latest frame
         
 
-        width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        cv2_fps = self.cap.get(cv2.CAP_PROP_FPS)
+        actual_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        actual_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        actual_cv2_fps = self.cap.get(cv2.CAP_PROP_FPS)
+
+        if actual_width != 320 or actual_height != 240:
+            self.get_logger().warning(f"HARDWARE REJECTED 320x240, Current: {int(actual_width)}x{int(actual_height)}")
+        else:
+            self.get_logger().info(f"SUCCESS: Camera resolution set to {int(actual_width)}x{int(actual_height)}")
 
         self.frame_count_ = 0
         self.start_time_ = self.get_clock().now()
