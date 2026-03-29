@@ -1,11 +1,12 @@
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import Header
 
 from cv_bridge import CvBridge
 import cv2
+import numpy as np
 
 import threading 
 
@@ -14,6 +15,7 @@ class ImagePublisher(Node):
         super().__init__('image_publisher')
 
         self.publisher_ = self.create_publisher(Image, 'image_topic', 10)
+        self.compressed_publisher_ = self.create_publisher(CompressedImage, 'image_topic/compressed', 10)
 
         #self.timer_ = self.create_timer(0.01, self.publish_image)  # Publish at 100 Hz
 
@@ -52,8 +54,6 @@ class ImagePublisher(Node):
         self.get_logger().info('Threaded Image Publisher Node Started')
         self.get_logger().info(f"Camera resolution: {int(actual_width)}x{int(actual_height)}, CV2 FPS: {actual_cv2_fps}")
     
-
-
     def capture_loop(self):
         while not self.stop_event.is_set():
             start_time = self.get_clock().now()
@@ -61,14 +61,41 @@ class ImagePublisher(Node):
             end_time = self.get_clock().now()
 
             if self.stop_event.is_set(): # Check if stop event is set after reading the frame, if so,
+                print('Stop event set, exiting capture loop')
                 break
 
-            if ret and frame is not None: # If the frame was successfully captured, update the shared frame variable with proper locking
-                    self.publish_image(frame) # Publish the image immediately after capturing it
             if not ret or frame is None: # If the frame was not successfully captured, print an error message and break the loop
                 self.get_logger().warn('Dropped frame or camera disconnected')
                 break
 
+            header = Header()
+            header.stamp = self.get_clock().now().to_msg()
+            header.frame_id = 'camera_frame'
+
+            try:
+                msg = self.bridge_.cv2_to_imgmsg(frame, encoding='bgr8')
+                msg.header = header
+                self.publisher_.publish(msg)
+                #self.get_logger().info('Published an image')
+            except Exception as e:
+                self.get_logger().error(f'Failed to publish image: {e}')
+                continue
+
+            try:
+                success, compressed_frame = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80]) # Compress the frame using JPEG encoding with a quality of 80
+                if success:
+                    compressed_msg = CompressedImage()
+                    compressed_msg.header = header
+                    compressed_msg.format = 'jpeg'
+                    compressed_msg.data = np.array(compressed_frame).tobytes()
+                    self.compressed_publisher_.publish(compressed_msg)
+                    #self.get_logger().info('Published a compressed image')
+                else:
+                    self.get_logger().warn('Failed to compress the image')
+            except Exception as e:
+                self.get_logger().error(f'Failed to publish compressed image: {e}')
+                continue
+  
             capture_time = (end_time - start_time).nanoseconds / 1e9
     
             self.frame_count_ += 1
@@ -84,18 +111,7 @@ class ImagePublisher(Node):
                 self.start_time_ = current_time
         print('Exiting capture loop')
 
-    def publish_image(self, frame):
-        header = Header()
-        header.stamp = self.get_clock().now().to_msg()
-        header.frame_id = 'camera_frame'
-
-        msg = self.bridge_.cv2_to_imgmsg(frame, encoding='bgr8')
-        msg.header = header
-
-        self.publisher_.publish(msg)
-        #self.get_logger().info('Published an image')
-    
-    def destroy_node(self):        
+    def destroy_node(self):     
         self.stop_event.set() # Signal the capture thread to stop
 
         if self.capture_thread.is_alive():
