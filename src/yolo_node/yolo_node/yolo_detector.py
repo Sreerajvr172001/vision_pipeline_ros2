@@ -41,8 +41,8 @@ class YoloNode(Node):
         # Annotate the frame with detection results
         annotated_frame = result.plot()
         # Display the annotated frame in a window
-        #cv2.imshow("MK2 AI View", annotated_frame)
-        #cv2.waitKey(1)
+        cv2.imshow("MK2 AI View", annotated_frame)
+        cv2.waitKey(1)
 
         # Create a Detection2DArray message to publish the detections
         detection_array_msg = Detection2DArray()
