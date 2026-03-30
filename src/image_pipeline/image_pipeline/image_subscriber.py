@@ -21,13 +21,21 @@ class ImageSubscriber(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
     node = ImageSubscriber()
-    rclpy.spin(node)
-
-    node.destroy_node()
-    rclpy.shutdown()
-
+    
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        print('Keyboard Interrupt Received')
+    finally:
+        print('Shutting down node')
+        if rclpy.ok():
+            node.destroy_node()
+            try:
+                 rclpy.shutdown()                
+            except Exception:
+                pass
+           
 if __name__ == '__main__':
     main()
 
