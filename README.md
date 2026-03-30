@@ -49,7 +49,7 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 ## System Architecture
 
-![System Architecture](vision_pipeline_ros_graph.png)
+![System Architecture](assets/vision_pipeline_ros2_system_architecture.png)
 
 ### Packages & Nodes
 
