@@ -82,8 +82,6 @@ class YoloNode(Node):
         # Publish the Detection2DArray message to the /detections topic
         self.detection_publisher_.publish(detection_array_msg)
 
-        self.get_logger().info(f'Received frame: {frame.shape}')
-
 def main(args=None):
     rclpy.init(args=args)
     node = YoloNode()
