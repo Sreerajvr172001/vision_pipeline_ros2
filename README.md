@@ -25,6 +25,7 @@ This is a modular pipeline where each node handles a specific stage of the visio
 
 ## 📊 Node Graph (rqt_graph)
 ![ROS 2 Node Graph](assets/vision_pipeline_ros_graph.png)
+
 *Visualizing the high-throughput communication between the publisher and the inference engine.*
 
 ## 🎥 Detections in Action
