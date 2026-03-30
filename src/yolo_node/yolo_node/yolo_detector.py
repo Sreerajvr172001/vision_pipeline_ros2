@@ -25,7 +25,7 @@ class YoloNode(Node):
         self.detection_publisher_ = self.create_publisher(Detection2DArray, 'detections', 10)
 
         # Load the YOLO model
-        self.model = YOLO('yolo26n.engine', task='detect')
+        self.model = YOLO('yolo26m.engine', task='detect')
         #self.model.to('cuda')
 
         self.get_logger().info('Yolo Node Started - publishing to /detections topic')
