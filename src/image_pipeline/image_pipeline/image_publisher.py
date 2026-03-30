@@ -44,6 +44,7 @@ class ImagePublisher(Node):
         self.start_time_ = self.get_clock().now()
 
         self.frame = None
+        self.new_frame_available = False
         self.lock = threading.Lock()
 
         self.stop_event = threading.Event()
