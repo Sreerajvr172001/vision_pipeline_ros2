@@ -10,7 +10,7 @@ A high-performance, deterministic object detection pipeline built for the **MK2 
 
 <img src="https://img.shields.io/badge/YOLO26-NMS--Free-blue" /> <img src="https://img.shields.io/badge/TensorRT-FP16-green" /> <img src="https://img.shields.io/badge/ROS2-Humble-orange" />
 
-[YOLO26](https://docs.ultralytics.com/models/yolo26/) is Ultralytics' latest-generation real-time detector (released September 2025), purpose-built for edge and robotics deployment. It's not just an incremental upgrade — it's an architectural rethink:
+[YOLO26](https://docs.ultralytics.com/models/yolo26/) is Ultralytics' latest-generation real-time detector (released January 2026), purpose-built for edge and robotics deployment. It's not just an incremental upgrade — it's an architectural rethink:
 
 - **NMS-Free, End-to-End Inference** — eliminates Non-Maximum Suppression as a post-processing step entirely via a One-to-One detection head. What you train is exactly what you deploy. No manual IoU threshold tuning, no pipeline complexity.
 - **DFL Removal** — Distribution Focal Loss is gone, which makes TensorRT and ONNX exports dramatically cleaner and more hardware-compatible. This was a key reason for choosing it for this project.
