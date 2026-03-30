@@ -7,18 +7,30 @@ class ImageSubscriber(Node):
         super().__init__('image_subscriber')
 
         self.subscription_ = self.create_subscription(Image, 'image_topic', self.listener_callback, 10)
+        self.start_time = self.get_clock().now().nanoseconds / 1e9
+        self.frame_count = 0
+
 
     def listener_callback(self, msg):
-        now = self.get_clock().now().to_msg()
+        now = self.get_clock().now()
 
-        current_time = now.sec + now.nanosec * 1e-9
+        current_time = now.nanoseconds / 1e9
 
         msg_time = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
 
+        self.frame_count += 1
+
+        elapsed_time = current_time - self.start_time
         latency = current_time - msg_time
 
-        self.get_logger().info(f"latency: {latency*1000:.2f} ms")
+        if elapsed_time >= 1:
+            fps = self.frame_count / elapsed_time
+            self.get_logger().info(f"latency: {latency*1000:.2f} ms, FPS: {fps:.2f}")
+            self.frame_count = 0
+            self.start_time = current_time
+        
 
+        
 def main(args=None):
     rclpy.init(args=args)
     node = ImageSubscriber()
