@@ -49,32 +49,7 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 ## System Architecture
 
-```
-[Webcam / V4L2]
-      │
-      ▼
-┌──────────────────────────────┐
-│  image_pipeline package      │
-│  ┌────────────────────────┐  │
-│  │    image_publisher     │  │──── /image_topic ──────────────────────►
-│  │  (Threaded V4L2 node)  │  │──── /image_topic/compressed ──────────►
-│  └────────────────────────┘  │
-│  ┌────────────────────────┐  │
-│  │   image_subscriber     │  │◄─── /image_topic (diagnostic only)
-│  │  (Latency/FPS monitor) │  │
-│  └────────────────────────┘  │
-└──────────────────────────────┘
-                                              │
-                                              ▼
-                                 ┌────────────────────────┐
-                                 │     yolo_node package  │
-                                 │     yolo_detector.py   │
-                                 │   (TensorRT Inference) │
-                                 └────────────────────────┘
-                                              │
-                                              ▼
-                                 /detections (vision_msgs/Detection2DArray)
-```
+![System Architecture](vision_pipeline_ros2_system_architecture.png)
 
 ### Packages & Nodes
 
