@@ -17,7 +17,7 @@ class ImagePublisher(Node):
         self.publisher_ = self.create_publisher(Image, 'image_topic', 10)
         self.compressed_publisher_ = self.create_publisher(CompressedImage, 'image_topic/compressed', 10)
 
-        #self.timer_ = self.create_timer(0.01, self.publish_image)  # Publish at 100 Hz
+        self.timer_ = self.create_timer(0.033, self.publish_image)  # Publish at 30 Hz
 
         self.bridge_ = CvBridge()
 
