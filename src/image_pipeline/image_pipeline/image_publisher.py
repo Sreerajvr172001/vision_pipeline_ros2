@@ -67,36 +67,19 @@ class ImagePublisher(Node):
 
             if not ret or frame is None: # If the frame was not successfully captured, print an error message and break the loop
                 self.get_logger().warn('Dropped frame or camera disconnected')
-                break
-
-            header = Header()
-            header.stamp = self.get_clock().now().to_msg()
-            header.frame_id = 'camera_frame'
-
-            try:
-                msg = self.bridge_.cv2_to_imgmsg(frame, encoding='bgr8')
-                msg.header = header
-                self.publisher_.publish(msg)
-                #self.get_logger().info('Published an image')
-            except Exception as e:
-                self.get_logger().error(f'Failed to publish image: {e}')
                 continue
 
-            try:
-                success, compressed_frame = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80]) # Compress the frame using JPEG encoding with a quality of 80
-                if success:
-                    compressed_msg = CompressedImage()
-                    compressed_msg.header = header
-                    compressed_msg.format = 'jpeg'
-                    compressed_msg.data = np.array(compressed_frame).tobytes()
-                    self.compressed_publisher_.publish(compressed_msg)
-                    #self.get_logger().info('Published a compressed image')
-                else:
-                    self.get_logger().warn('Failed to compress the image')
-            except Exception as e:
-                self.get_logger().error(f'Failed to publish compressed image: {e}')
-                continue
-  
+            with self.lock:
+                self.frame = frame # Update the shared frame variable with the latest captured frame
+                self.header = Header()
+                self.header.stamp = self.get_clock().now().to_msg() # Update the header
+                self.frame_id = 'camera_frame' # Set the frame ID for the header
+                self.new_frame_available = True # Set the flag to indicate that a new frame is available for publishing
+            
+            average_brightness = np.mean(frame)
+            if average_brightness < 100: # If the average brightness is very low, fps may be affected, so print a warning message
+                self.get_logger().warn(f'Low brightness detected (average brightness: {average_brightness:.2f}), FPS may be affected')
+
             capture_time = (end_time - start_time).nanoseconds / 1e9
     
             self.frame_count_ += 1
@@ -111,6 +94,36 @@ class ImagePublisher(Node):
                 self.frame_count_ = 0
                 self.start_time_ = current_time
         print('Exiting capture loop')
+
+    def publish_image(self):
+            with self.lock:
+                if self.frame is None or not self.new_frame_available:
+                    return
+                frame = self.frame # Make a local copy of the frame to avoid holding the lock while publishing
+                self.new_frame_available = False # Reset the flag after copying the frame
+
+            try:
+                msg = self.bridge_.cv2_to_imgmsg(frame, encoding='bgr8')
+                msg.header = self.header
+                self.publisher_.publish(msg)
+                #self.get_logger().info('Published an image')
+            except Exception as e:
+                self.get_logger().error(f'Failed to publish image: {e}')
+
+            if self.compressed_publisher_.get_subscription_count() > 0: # Only publish compressed image if there are subscribers to the compressed topic
+                try:
+                    success, compressed_frame = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80]) # Compress the frame using JPEG encoding with a quality of 80
+                    if success:
+                        compressed_msg = CompressedImage()
+                        compressed_msg.header = self.header
+                        compressed_msg.format = 'jpeg'
+                        compressed_msg.data = np.array(compressed_frame).tobytes()
+                        self.compressed_publisher_.publish(compressed_msg)
+                        #self.get_logger().info('Published a compressed image')
+                    else:
+                        self.get_logger().warn('Failed to compress the image')
+                except Exception as e:
+                    self.get_logger().error(f'Failed to publish compressed image: {e}')
 
     def destroy_node(self):     
         self.stop_event.set() # Signal the capture thread to stop
