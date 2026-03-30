@@ -201,31 +201,6 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ---
 
-## Media Setup Guide (for contributors / reproducers)
-
-To add your own demo media:
-
-```
-docs/
-├── yolo26n.gif          # Screen-recorded detection output, converted to GIF
-├── yolo26s.gif
-├── yolo26m.gif
-├── export_thumbnail.png # Screenshot from export video (used as YouTube link preview)
-└── pipeline_thumbnail.png
-assets/
-└── vision_pipeline_ros_graph.png   # rqt_graph screenshot
-```
-
-**Converting screen recordings to GIF:**
-```bash
-# Using ffmpeg (keep under ~10MB for GitHub inline rendering)
-ffmpeg -i recording.mp4 -vf "fps=15,scale=800:-1" -loop 0 output.gif
-```
-
-**Uploading videos:** Upload full screen recordings to YouTube as **Unlisted**, then link them via the thumbnail pattern shown above.
-
----
-
 ## ROS 2 Node Graph
 
 ![ROS 2 Node Graph](assets/vision_pipeline_ros_graph.png)
