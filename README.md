@@ -189,7 +189,7 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ### TensorRT Export Process (Screen Recordings)
 
-[![Export Walkthrough](assets/yolo26m_TensorRT_Export.gif)]
+![Export Walkthrough](assets/yolo26m_TensorRT_Export.gif)
 
 *`.pt` → `.engine` export with FP16 quantization using TensorRT*
 
