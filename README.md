@@ -185,7 +185,7 @@ ros2 topic echo /detections        # Structured bounding box output
 
 | YOLO26n | YOLO26s | YOLO26m |
 | :---: | :---: | :---: |
-| ![YOLO26n](./docs/yolo26n.gif) | ![YOLO26s](./docs/yolo26s.gif) | ![YOLO26m](./docs/yolo26m.gif) |
+| ![YOLO26n](assets/yolo26n.gif) | ![YOLO26s](/assets/yolo26s.gif) | ![YOLO26m](/assets/yolo26m.gif) |
 
 ### TensorRT Export Process (Screen Recordings)
 
@@ -195,7 +195,7 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ### Full Pipeline Demo — YOLO26m
 
-![yolo26m](assets/yolo26m_detection.gif)
+![yolo26m](/assets/yolo26m_detection_full_pipeline.gif)
 
 *4-terminal setup: image_publisher | image_subscriber | yolo_node | nvtop GPU monitor | OpenCV detection window with live bounding boxes on ~4-5 objects.*
 
