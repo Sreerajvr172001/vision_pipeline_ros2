@@ -189,9 +189,9 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ### TensorRT Export Process (Screen Recordings)
 
-[![Export Walkthrough](./docs/export_thumbnail.png)](https://www.youtube.com/watch?v=YOUR_LINK_HERE)
+[![Export Walkthrough](assets/yolo26m_TensorRT_Export.gif)]
 
-*Click to watch: `.pt` → `.engine` export with TensorRT FP16 for all three model variants (Nano, Small, Medium).*
+*`.pt` → `.engine` export with FP16 quantization using TensorRT*
 
 ### Full Pipeline Demo — YOLO26m
 
