@@ -197,7 +197,7 @@ ros2 topic echo /detections        # Structured bounding box output
 
 [![Full Pipeline Demo](./docs/pipeline_thumbnail.png)](https://www.youtube.com/watch?v=YOUR_LINK_HERE)
 
-*4-terminal setup: image_publisher | yolo_node logs | nvtop GPU monitor | OpenCV detection window with live bounding boxes on ~4-5 objects.*
+*4-terminal setup: image_publisher | image_subscriber | yolo_node | nvtop GPU monitor | OpenCV detection window with live bounding boxes on ~4-5 objects.*
 
 ---
 
