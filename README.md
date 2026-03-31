@@ -27,9 +27,9 @@ This project went through a deliberate benchmarking progression, starting at the
 
 | Stage | Model | Format | Precision | Inference (mean) | Decision |
 | :---: | :--- | :--- | :--- | :--- | :--- |
-| 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | GPU barely loaded — headroom to scale up |
-| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | Good GPU utilization, clear accuracy jump. **Current model.** |
-| 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | Heavy
+| 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | High Throughput / Low Precision. Excellent speed, but rejected due to lower confidence stability in complex environments. |
+| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | Optimal Balance. Selected as the **primary model**. Provides a ~7% mAP boost over Nano while maintaining a 50% timing buffer for the ROS 2 control loop. |
+| 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | High Precision / High Overhead. Peak accuracy, but rejected for real-time deployment as it consumes ~74% of the 30 FPS frame budget, risking jitter. |
 
 Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (see `tools/export_model.py`). The Nano was the starting point — not because accuracy wasn't needed, but to understand the performance floor before committing to a heavier model.
 
