@@ -179,7 +179,7 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ## Detections in Action
 
-> *All recordings captured live: image_publisher + yolo_node + nvtop + OpenCV bounding box window running simultaneously.*
+> *All recordings captured live: image_publisher + image_subscriber + yolo_node + nvtop + OpenCV bounding box window running simultaneously.*
 
 ### Model Comparison: Nano → Small → Medium
 
@@ -192,7 +192,7 @@ YOLO26s
 YOLO26m
 ![YOLO26m](/assets/yolo26m.gif)
 
-### TensorRT Export Process (Screen Recordings)
+### TensorRT Export Process
 
 ![Export Walkthrough](assets/yolo26m_TensorRT_Export.gif)
 
