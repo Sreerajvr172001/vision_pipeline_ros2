@@ -203,7 +203,7 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ## ROS 2 Node Graph
 
-![ROS 2 Node Graph](assets/vision_pipeline_ros_graph.png)
+![ROS 2 Node Graph](assets/vision_pipeline_ros2_rosgraph.png)
 
 *Generated with `rqt_graph`. Run `rqt_graph` with all nodes active to regenerate.*
 
