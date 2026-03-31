@@ -25,11 +25,11 @@ For a robot that needs **deterministic, low-latency inference** with **clean Ten
 
 This project went through a deliberate benchmarking progression, starting at the lightest variant and upgrading as GPU headroom allowed:
 
-| Stage | Model | Format | Precision | Inference | Decision |
+| Stage | Model | Format | Precision | Inference (mean) | Decision |
 | :---: | :--- | :--- | :--- | :--- | :--- |
-| 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~1.8ms | GPU barely loaded — headroom to scale up |
-| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | ~2.6ms | Still well within budget — upgrade again |
-| 3 | `yolo26m` | `.pt` → `.engine` | FP16 | **~4.4ms** ✅ | Good GPU utilization, clear accuracy jump. **Current model.** |
+| 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | GPU barely loaded — headroom to scale up |
+| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | Good GPU utilization, clear accuracy jump. **Current model.** |
+| 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | Heavy
 
 Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (see `tools/export_model.py`). The Nano was the starting point — not because accuracy wasn't needed, but to understand the performance floor before committing to a heavier model.
 
@@ -39,9 +39,9 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 | Model | Precision | Inference Latency | Architecture |
 | :--- | :--- | :--- | :--- |
-| **YOLO26m** | **FP16 (TensorRT)** | **~4.4ms** | NMS-Free, DFL-Free |
-| YOLO26s | FP16 (TensorRT) | ~2.6ms | NMS-Free, DFL-Free |
-| YOLO26n | FP16 (TensorRT) | ~1.8ms | NMS-Free, DFL-Free |
+| YOLO26n | FP16 (TensorRT) | ~10.12ms | NMS-Free, DFL-Free |
+| YOLO26s | FP16 (TensorRT) | ~14.57ms | NMS-Free, DFL-Free |
+| YOLO26m | FP16 (TensorRT) | ~24.55ms | NMS-Free, DFL-Free |
 
 > Benchmarked on: RTX 3050 Laptop GPU (4GB VRAM), Ubuntu 22.04, ROS 2 Humble, TensorRT 8.x, `imgsz=320`.
 
