@@ -183,11 +183,14 @@ ros2 topic echo /detections        # Structured bounding box output
 
 ### Model Comparison: Nano → Small → Medium
 
+YOLO26n
+![YOLO26n](/assets/yolo26n.gif)| 
 
-| :---: | :---: |
-| YOLO26n |![YOLO26n](/assets/yolo26n.gif)| 
-| YOLO26s |![YOLO26s](/assets/yolo26s.gif)| 
-| YOLO26m |![YOLO26m](/assets/yolo26m.gif)|
+YOLO26s
+![YOLO26s](/assets/yolo26s.gif)| 
+
+YOLO26m
+![YOLO26m](/assets/yolo26m.gif)|
 
 ### TensorRT Export Process (Screen Recordings)
 
