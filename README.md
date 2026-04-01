@@ -25,23 +25,27 @@ For a robot that needs **deterministic, low-latency inference** with **clean Ten
 
 This project went through a deliberate benchmarking progression, starting at the lightest variant and upgrading as GPU headroom allowed:
 
-| Stage | Model | Format | Precision | Inference (mean) | Decision |
-| :---: | :--- | :--- | :--- | :--- | :--- |
-| 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | High Throughput / Low Precision. Excellent speed, but rejected due to lower confidence stability in complex environments. |
-| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | Optimal Balance. Selected as the **primary model**. Provides a ~7% mAP boost over Nano while maintaining a 50% timing buffer for the ROS 2 control loop. |
-| 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | High Precision / High Overhead. Peak accuracy, but rejected for real-time deployment as it consumes ~74% of the 30 FPS frame budget, risking jitter. |
+| Stage | Model | Format | Precision | Inference Latency (mean) | Confidence (mean)| Decision |
+| :---: | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | ~89.81% |High Throughput / Low Precision. Excellent speed, but rejected due to lower confidence stability in complex environments. |
+| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | **~94.20%** ✅ |Optimal Balance. Selected as the **primary model**. Provides a ~5% confidence boost over Nano while maintaining a 50% timing buffer for the ROS 2 control loop. |
+| 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | ~95.78% |High Precision / High Overhead. Peak accuracy, but rejected for real-time deployment as it consumes ~74% of the 30 FPS frame budget, risking jitter. |
 
 Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (see `tools/export_model.py`). The Nano was the starting point — not because accuracy wasn't needed, but to understand the performance floor before committing to a heavier model.
+
+> Avg confidence is measured on a controlled single-person scene (500+ post-warmup detections per model).
 
 ---
 
 ## Performance Benchmarks
 
-| Model | Precision | Inference Latency | Architecture |
-| :--- | :--- | :--- | :--- |
-| YOLO26n | FP16 (TensorRT) | ~10.12ms | NMS-Free, DFL-Free |
-| YOLO26s | FP16 (TensorRT) | ~14.57ms | NMS-Free, DFL-Free |
-| YOLO26m | FP16 (TensorRT) | ~24.55ms | NMS-Free, DFL-Free |
+| Model | Precision | Inference Latency (mean)| Confidence (mean) | Architecture |
+| :--- | :--- | :--- | :--- | :--- |
+| YOLO26m | FP32 (PyTorch)  | ~82.08ms | ~94.51% | NMS-Free, DFL-Free |
+| YOLO26m | FP16 (TensorRT) | ~24.55ms | ~95.78% | NMS-Free, DFL-Free |
+| YOLO26s | FP16 (TensorRT) | ~14.57ms | ~94.20% | NMS-Free, DFL-Free |
+| YOLO26n | FP16 (TensorRT) | ~10.12ms | ~89.81% | NMS-Free, DFL-Free |
+
 
 > Benchmarked on: RTX 3050 Laptop GPU (4GB VRAM), Ubuntu 22.04, ROS 2 Humble, TensorRT 8.x, `imgsz=320`.
 
