@@ -39,12 +39,12 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 ## Performance Benchmarks
 
-| Model | Precision | Inference Latency (mean)| Confidence (mean) | Architecture |
-| :--- | :--- | :--- | :--- | :--- |
-| YOLO26m | FP32 (PyTorch)  | ~82.08ms | ~94.51% | NMS-Free, DFL-Free |
-| YOLO26m | FP16 (TensorRT) | ~24.55ms | ~95.78% | NMS-Free, DFL-Free |
-| YOLO26s | FP16 (TensorRT) | ~14.57ms | ~94.20% | NMS-Free, DFL-Free |
-| YOLO26n | FP16 (TensorRT) | ~10.12ms | ~89.81% | NMS-Free, DFL-Free |
+| Model | Precision | Inference Latency (mean)| Inference Latency (P95) | Confidence (mean) | Architecture |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| YOLO26m | FP32 (PyTorch)  | ~82.08ms | ~82.65ms |~94.51% | NMS-Free, DFL-Free |
+| YOLO26m | FP16 (TensorRT) | ~24.55ms | ~26.03ms |~95.78% | NMS-Free, DFL-Free |
+| YOLO26s | FP16 (TensorRT) | ~14.57ms | ~16.49ms |~94.20% | NMS-Free, DFL-Free |
+| YOLO26n | FP16 (TensorRT) | ~10.12ms | ~12.07ms |~89.81% | NMS-Free, DFL-Free |
 
 
 > Benchmarked on: RTX 3050 Laptop GPU (4GB VRAM), Ubuntu 22.04, ROS 2 Humble, TensorRT 8.x, `imgsz=320`.
