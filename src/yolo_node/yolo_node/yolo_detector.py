@@ -80,10 +80,10 @@ class YoloNode(Node):
         self.detection_publisher_ = self.create_publisher(Detection2DArray, 'detections', 10)
 
         # Load the YOLO model
-        self.model_path = 'yolo26m.pt'  # Ensure this path is correct and the model file is present
+        self.model_path = 'yolo26m.engine'  # Ensure this path is correct and the model file is present
         self.model_name = self.model_path.split('/')[-1]
         self.model = YOLO(self.model_path)
-        self.model.to('cuda')
+        #self.model.to('cuda')
 
         self.tracker_ = YOLOLatencyTracker()
 
