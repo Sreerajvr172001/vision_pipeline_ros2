@@ -1,6 +1,6 @@
 # MK2 Robot Vision: Real-Time YOLO26 ROS 2 Pipeline
 
-A high-performance, deterministic object detection pipeline built for the **MK2 Autonomous Navigation Robot**, running **Ultralytics YOLO26** compiled to a **TensorRT FP16 engine** — achieving **~4.4ms inference latency** on an RTX 3050 Laptop GPU over a clean ROS 2 pub/sub architecture.
+A high-performance, deterministic object detection pipeline built for the **MK2 Autonomous Navigation Robot**, running **Ultralytics YOLO26** compiled to a **TensorRT FP16 engine** — benchmarked at **~14.57ms mean** / **~16.49ms P95 inference latency** on an RTX 3050 Laptop GPU over a clean ROS 2 pub/sub architecture.
 
 > **Deployment Target:** Currently running on a development laptop (RTX 3050). Planned migration to **NVIDIA Jetson Orin Nano Super** for onboard autonomous operation.
 
@@ -48,6 +48,7 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 
 > Benchmarked on: RTX 3050 Laptop GPU (4GB VRAM), Ubuntu 22.04, ROS 2 Humble, TensorRT 8.x, `imgsz=320`.
+> FP16 TensorRT engines produce marginally higher confidence scores than PyTorch .pt weights due to FP16 arithmetic rounding in sigmoid activations — a known quantization effect, not a measurement error.
 
 ---
 
@@ -68,7 +69,7 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 | Node | Role |
 | :--- | :--- |
-| `yolo_detector` | Subscribes to `/image_topic` with `QoSProfile(depth=1)`. Runs YOLO26m.engine inference via Ultralytics API. Publishes structured `Detection2DArray` to `/detections`. Renders annotated bounding boxes in an OpenCV window. |
+| `yolo_detector` | Subscribes to `/image_topic` with `QoSProfile(depth=1)`. Runs YOLO26m.engine inference via Ultralytics API. Publishes structured `Detection2DArray` to `/detections`. Tracks inference latency and per-class detection confidence. Renders annotated bounding boxes in an OpenCV window. |
 
 ---
 
@@ -91,6 +92,30 @@ All models are exported from `.pt` to `.engine` with `half=True` at `imgsz=320`.
 
 ### 6. Diagnostic Subscriber for Ground-Truth Latency
 The `image_subscriber` node exists specifically to measure the publisher's actual performance. Rather than relying on ROS internal counters, it computes `current_time - msg.header.stamp` to get the true publish-to-receive latency, reported live every second.
+
+### 7. Inference Latency Tracking with P95
+The `YOLOLatencyTracker` class inside `yolo_detector.py` instruments every inference call using Ultralytics' internal `result.speed` dict, which breaks latency into three stages: `preprocess`, `inference`, and `postprocess`. These are more accurate than wrapping `model()` in `time.perf_counter()` because Ultralytics brackets each stage individually including CUDA synchronisation points.
+ 
+Key design decisions in the tracker:
+ 
+- **Warmup discard** — the first `WARMUP_FRAMES = 10` frames are silently dropped. TensorRT engines and PyTorch JIT both exhibit one-time compilation spikes on the first few frames; including them would distort the mean and P95.
+- **Moving average** — a rolling window of the last 30 frames (`MOVING_AVG_WINDOW`) is printed on every frame for live monitoring without terminal noise.
+- **Periodic full report** — every `REPORT_EVERY = 100` post-warmup frames, a full stats block prints: mean, P95, min, and max latency.
+- **P95 over mean** — mean latency tells you the average case. P95 tells you what the navigation stack must be designed around: at 30 FPS, a P95 of 16.49ms means roughly 1 in 20 frames exceeds that threshold. A spike that only appears in the mean as a small bump can represent a missed navigation deadline at the worst moment.
+- **Final stats on Ctrl+C** — `print_stats()` is called in the `finally` block of `main()`, guaranteeing a complete latency report is always printed on shutdown regardless of whether the `REPORT_EVERY` boundary was reached.
+ 
+### 8. Per-Class Detection Confidence Tracking
+The `ConfidenceTracker` class tracks mean detection confidence separately per class across frames, giving a fair and stable accuracy metric to compare across model variants.
+ 
+Latency alone is an incomplete performance metric — it tells you how fast the model is, not how reliable its detections are. Confidence bridges that gap without requiring a full COCO evaluation run.
+ 
+Key design decisions in the tracker:
+ 
+- **Per-class, not per-frame** — a frame containing both a high-confidence person and a low-confidence chair would produce a misleading average if averaged together. Tracking per class means each object class has its own independent confidence history.
+- **Shared warmup guard** — `ConfidenceTracker` applies the same `WARMUP_FRAMES` discard as `YOLOLatencyTracker`, keeping both trackers' sample counts in sync. This makes confidence and latency numbers directly comparable — both exclude the same early frames.
+- **Empty frames not recorded** — a frame with zero detections is skipped entirely. An empty frame is not evidence of low confidence; it is evidence of no detection. Including it as a zero would corrupt the mean.
+- **Frozen snapshot mechanism** — once a class accumulates `CONFIDENCE_SNAPSHOT_AT = 500` post-warmup detections, its mean confidence is frozen into `confidence_snapshots_` and printed with a `[SNAPSHOT]` label on every subsequent stats report. This snapshot is the benchmark value used in the README tables — stable enough at 500 samples that further frames will not meaningfully shift the mean. The live running mean continues printing alongside it for reference.
+- **Alphabetical output** — classes are sorted alphabetically in the stats report for consistent output across runs, making side-by-side terminal comparisons easier when benchmarking multiple model variants.
 
 ---
 
@@ -139,7 +164,7 @@ This produces a `.engine` file. Place it in your working directory or update the
 # tools/export_model.py
 from ultralytics import YOLO
 
-model = YOLO('yolo26m.pt')  # swap for yolo26n.pt or yolo26s.pt
+model = YOLO('yolo26s.pt')  # swap for yolo26m.pt or yolo26n.pt
 model.export(format='engine', device='0', half=True, imgsz=320, verbose=True)
 ```
 
@@ -193,7 +218,7 @@ YOLO26n (TensorRT Engine, FP16)
 YOLO26s (TensorRT Engine, FP16)
 ![YOLO26s](/assets/yolo26s.gif)
 
-YOLO26m (TensorRt Engine, FP16)
+YOLO26m (TensorRT Engine, FP16)
 ![YOLO26m](/assets/yolo26m.gif)
 
 ### TensorRT Export Process
@@ -220,12 +245,12 @@ YOLO26m (TensorRt Engine, FP16)
 
 ## Roadmap
 
-- [ ] Deploy on NVIDIA Jetson Orin Nano Super
 - [ ] Add a unified launch file for the full pipeline
 - [ ] Expose confidence threshold and target classes as ROS 2 parameters (currently hardcoded)
 - [ ] Pipe `/detections` into the navigation / obstacle avoidance stack
-- [ ] Benchmark INT8 quantization on Jetson for further latency reduction
-- [ ] Evaluate YOLO26l on Jetson Orin's higher VRAM budget
+- [ ] Build agentic AI reasoning layer on top of the detection pipeline (Ollama + local LLMs)
+- [ ] Migrate camera publisher to Raspberry Pi 4 onboard the robot
+- [ ] Evaluate INT8 quantization for further latency reduction on the laptop GPU
 
 ---
 
