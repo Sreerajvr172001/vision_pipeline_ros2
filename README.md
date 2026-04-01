@@ -26,7 +26,7 @@ For a robot that needs **deterministic, low-latency inference** with **clean Ten
 This project went through a deliberate benchmarking progression, starting at the lightest variant and upgrading as GPU headroom allowed:
 
 | Stage | Model | Format | Precision | Inference Latency (mean) | Confidence (mean)| Decision |
-| :---: | :--- | :--- | :--- | :--- | :--- | :--- |
+| :---: | :--- | :--- | :---: | :---- | :--- | :--- |
 | 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | ~89.81% |High Throughput / Low Precision. Excellent speed, but rejected due to lower confidence stability in complex environments. |
 | 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | **~94.20%** ✅ |Optimal Balance. Selected as the **primary model**. Provides a ~5% confidence boost over Nano while maintaining a 50% timing buffer for the ROS 2 control loop. |
 | 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | ~95.78% |High Precision / High Overhead. Peak accuracy, but rejected for real-time deployment as it consumes ~74% of the 30 FPS frame budget, risking jitter. |
