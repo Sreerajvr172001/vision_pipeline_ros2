@@ -48,6 +48,7 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 
 > Benchmarked on: RTX 3050 Laptop GPU (4GB VRAM), Ubuntu 22.04, ROS 2 Humble, TensorRT 8.x, `imgsz=320`.
+
 > FP16 TensorRT engines produce marginally higher confidence scores than PyTorch .pt weights due to FP16 arithmetic rounding in sigmoid activations — a known quantization effect, not a measurement error.
 
 ---
