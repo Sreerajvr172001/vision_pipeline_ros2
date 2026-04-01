@@ -2,7 +2,7 @@
 
 A high-performance, deterministic object detection pipeline built for the **MK2 Autonomous Navigation Robot**, running **Ultralytics YOLO26** compiled to a **TensorRT FP16 engine** — benchmarked at **~14.57ms mean** / **~16.49ms P95 inference latency** on an RTX 3050 Laptop GPU over a clean ROS 2 pub/sub architecture.
 
-> **Deployment Target:** Currently running on a development laptop (RTX 3050). Planned migration to **NVIDIA Jetson Orin Nano Super** for onboard autonomous operation.
+> **Deployment Target:** Currently running on a development laptop (RTX 3050). For MK2, Camera capture would run on a Raspberry Pi 4 (8GB) onboard the robot, publishing frames over the network via ROS 2. YOLO inference would run on the development laptop (RTX 3050 GPU) itself. Future platform migration to **NVIDIA Jetson Orin Nano Super** is planned for MK3.
 
 ---
 
@@ -28,7 +28,7 @@ This project went through a deliberate benchmarking progression, starting at the
 | Stage | Model | Format | Precision | Inference Latency (mean) | Confidence (mean)| Decision |
 | :---: | :--- | :--- | :---: | :---- | :--- | :--- |
 | 1 | `yolo26n` | `.pt` → `.engine` | FP16 | ~10.12ms | ~89.81% |High Throughput / Low Precision. Excellent speed, but rejected due to lower confidence stability in complex environments. |
-| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | **~94.20%** ✅ |Optimal Balance. Selected as the **primary model**. Provides a ~5% confidence boost over Nano while maintaining a 50% timing buffer for the ROS 2 control loop. |
+| 2 | `yolo26s` | `.pt` → `.engine` | FP16 | **~14.57ms** ✅ | **~94.20%** ✅ |Optimal Balance. Selected as the **primary model**. Provides a ~4.4% confidence boost over Nano while maintaining a 50% timing buffer for the ROS 2 control loop. |
 | 3 | `yolo26m` | `.pt` → `.engine` | FP16 | ~24.55ms | ~95.78% |High Precision / High Overhead. Peak accuracy, but rejected for real-time deployment as it consumes ~74% of the 30 FPS frame budget, risking jitter. |
 
 Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (see `tools/export_model.py`). The Nano was the starting point — not because accuracy wasn't needed, but to understand the performance floor before committing to a heavier model.
@@ -69,7 +69,7 @@ Each `.pt` → `.engine` export was done with FP16 quantization via TensorRT (se
 
 | Node | Role |
 | :--- | :--- |
-| `yolo_detector` | Subscribes to `/image_topic` with `QoSProfile(depth=1)`. Runs YOLO26m.engine inference via Ultralytics API. Publishes structured `Detection2DArray` to `/detections`. Tracks inference latency and per-class detection confidence. Renders annotated bounding boxes in an OpenCV window. |
+| `yolo_detector` | Subscribes to `/image_topic` with `QoSProfile(depth=1)`. Runs YOLO26s.engine inference via Ultralytics API. Publishes structured `Detection2DArray` to `/detections`. Tracks inference latency and per-class detection confidence. Renders annotated bounding boxes in an OpenCV window. |
 
 ---
 
@@ -251,6 +251,7 @@ YOLO26m (TensorRT Engine, FP16)
 - [ ] Build agentic AI reasoning layer on top of the detection pipeline (Ollama + local LLMs)
 - [ ] Migrate camera publisher to Raspberry Pi 4 onboard the robot
 - [ ] Evaluate INT8 quantization for further latency reduction on the laptop GPU
+- [ ] Migrate inference to NVIDIA Jetson platform for MK3
 
 ---
 
